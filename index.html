@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>QWUMP!</title>
     <style>
         * {
@@ -15,25 +15,1396 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        body {
+        html, body {
+            width: 100%;
+            height: 100%;
             background: #000;
             overflow: hidden;
             font-family: 'Courier New', monospace;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
         }
 
         #gameContainer {
-            position: relative;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* Screens - Fixed positioning to cover everything */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            flex-direction: column;
             justify-content: flex-start;
             align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        #startScreen { display: flex; }
+        #howToPlayScreen, #gameOverScreen { display: none; }
+
+        h1 {
+            color: #f0f;
+            font-size: 36px;
+            text-shadow: 0 0 20px #f0f, 0 0 40px #f0f;
+            margin: 30px 0 20px 0;
+            animation: pulse 2s infinite;
+            letter-spacing: 6px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .btn {
+            background: transparent;
+            border: 3px solid #0ff;
+            color: #0ff;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0,255,255,0.2);
+            transition: all 0.3s;
+            min-width: 220px;
+            text-align: center;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .btn:active {
+            background: #0ff;
+            color: #000;
+            transform: scale(0.95);
+        }
+
+        .btn.secondary {
+            border-color: #f0f;
+            color: #f0f;
+            box-shadow: 0 0 10px #f0f, inset 0 0 10px rgba(255,0,255,0.2);
+        }
+
+        .btn.secondary:active {
+            background: #f0f;
+            color: #000;
+        }
+
+        .btn.back {
+            border-color: #ff0;
+            color: #ff0;
+            box-shadow: 0 0 10px #ff0, inset 0 0 10px rgba(255,255,0,0.2);
+            margin: 20px 0;
+        }
+
+        .btn.back:active {
+            background: #ff0;
+            color: #000;
+        }
+
+        #highScore {
+            color: #0f0;
+            font-size: 16px;
+            margin-top: 20px;
+            text-shadow: 0 0 5px #0f0;
+            flex-shrink: 0;
+        }
+
+        /* How to Play Screen - Scrollable */
+        .instructions-container {
+            color: #fff;
+            text-align: left;
+            font-size: 14px;
+            line-height: 1.5;
+            width: 100%;
+            max-width: 320px;
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 10px 0;
+            margin: 10px 0;
+        }
+
+        .instruction-section {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-left: 3px solid #0ff;
+            background: rgba(0, 255, 255, 0.05);
+            flex-shrink: 0;
+        }
+
+        .instruction-section h3 {
+            color: #0ff;
+            margin-bottom: 8px;
+            font-size: 16px;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        .instruction-section p {
+            margin-bottom: 6px;
+            color: #ccc;
+            font-size: 13px;
+        }
+
+        .draw-demo {
+            width: 100%;
+            height: 120px;
+            background: #001100;
+            border: 2px solid #0f0;
+            margin: 10px 0;
+            position: relative;
+        }
+
+        .demo-border {
+            position: absolute;
+            background: #0f0;
+        }
+
+        .demo-player {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ff0;
+            box-shadow: 0 0 10px #ff0;
+        }
+
+        .demo-line {
+            position: absolute;
+            background: #0ff;
+            box-shadow: 0 0 5px #0ff;
+        }
+
+        .warning {
+            border-left-color: #f00;
+            background: rgba(255, 0, 0, 0.05);
+        }
+
+        .warning h3 {
+            color: #f00;
+            text-shadow: 0 0 5px #f00;
+        }
+
+        .tip {
+            border-left-color: #ff0;
+            background: rgba(255, 255, 0, 0.05);
+        }
+
+        .tip h3 {
+            color: #ff0;
+            text-shadow: 0 0 5px #ff0;
+        }
+
+        .colorQ { color: #f0f; text-shadow: 0 0 5px #f0f; font-weight: bold; }
+        .colorS { color: #f00; text-shadow: 0 0 5px #f00; font-weight: bold; }
+        .colorF { color: #ff6600; text-shadow: 0 0 5px #ff6600; font-weight: bold; }
+        .colorP { color: #ff0; text-shadow: 0 0 5px #ff0; font-weight: bold; }
+
+        /* Game Area */
+        #gameArea {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            padding: 5px;
+        }
+
+        #canvasContainer {
+            position: relative;
+            width: min(300px, 95vw);
+            height: min(400px, 55vh);
+            border: 2px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: #000;
+        }
+
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            z-index: 10;
+        }
+
+        .crt-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+            z-index: 11;
+        }
+
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        #score {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            color: #0ff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #0ff;
+            letter-spacing: 2px;
+        }
+
+        #lives {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: #f0f;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #f0f;
+        }
+
+        #percentage {
+            position: absolute;
+            top: 22px;
+            left: 10px;
+            color: #ff0;
+            font-size: 12px;
+            text-shadow: 0 0 5px #ff0;
+        }
+
+        #levelDisplay {
+            position: absolute;
+            top: 22px;
+            right: 10px;
+            color: #0f0;
+            font-size: 12px;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        /* Controls */
+        #controls {
+            width: 100%;
+            max-width: 400px;
+            height: 130px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 30px;
+            margin-top: 5px;
+        }
+
+        #dPad {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .dBtn {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,255,255,0.2);
+            border: 2px solid #0ff;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0ff;
+            font-size: 20px;
+            user-select: none;
+        }
+
+        .dBtn:active, .dBtn.active {
+            background: rgba(0,255,255,0.6);
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        #dUp { top: 0; left: 40px; }
+        #dDown { bottom: 0; left: 40px; }
+        #dLeft { top: 40px; left: 0; }
+        #dRight { top: 40px; right: 0; }
+
+        #actionButtons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .actionBtn {
+            width: 80px;
+            height: 60px;
+            background: rgba(255,0,255,0.2);
+            border: 3px solid #f0f;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #f0f;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255,0,255,0.5);
+        }
+
+        .actionBtn:active, .actionBtn.active {
+            background: rgba(255,0,255,0.6);
+            transform: scale(0.95);
+            box-shadow: 0 0 20px #f0f;
+        }
+
+        .draw-hint {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #0ff;
+            font-size: 11px;
+            text-shadow: 0 0 5px #0ff;
+            text-align: center;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="startScreen" class="screen">
+        <h1>QWUMP!</h1>
+        <button class="btn" id="btnHowToPlay">HOW TO PLAY</button>
+        <button class="btn secondary" id="btnStart">START GAME</button>
+        <div id="highScore">HIGH SCORE: 000000</div>
+    </div>
+
+    <!-- How to Play Screen -->
+    <div id="howToPlayScreen" class="screen">
+        <h1 style="font-size: 28px; margin: 20px 0;">HOW TO PLAY</h1>
+        
+        <div class="instructions-container">
+            <div class="instruction-section">
+                <h3>🎯 OBJECTIVE</h3>
+                <p>Claim <span class="colorQ">75% of the playfield</span> to advance to the next level.</p>
+            </div>
+
+            <div class="instruction-section">
+                <h3>✏️ HOW TO DRAW</h3>
+                <p>1. You start on the <span style="color:#0f0">GREEN BORDER</span></p>
+                <p>2. Press <strong style="color:#0ff">RIGHT</strong> to move INTO the black area</p>
+                <p>3. This starts DRAWING a line (cyan)</p>
+                <p>4. Move around, then return to any <span style="color:#0f0">GREEN BORDER</span></p>
+                <p>5. The area fills in!</p>
+                <p style="margin-top:8px; color:#ff0;"><strong>Tip: Start with small boxes!</strong></p>
+            </div>
+
+            <div class="instruction-section">
+                <h3>🎮 CONTROLS</h3>
+                <p><strong style="color:#0ff">D-PAD:</strong> Move (start from border!)</p>
+                <p><strong style="color:#f0f">FAST:</strong> Hold to move 2x speed</p>
+            </div>
+
+            <div class="instruction-section warning">
+                <h3>⚠️ ENEMIES</h3>
+                <p><span class="colorQ">QWUMP</span> - Purple spark in center. <span class="colorQ">Don't let it touch your line!</span></p>
+                <p><span class="colorS">SPARX</span> - Red sparks on borders. Avoid!</p>
+                <p><span class="colorF">FUSE</span> - Orange spark that follows your line if you're too slow!</p>
+            </div>
+
+            <div class="instruction-section tip">
+                <h3>💡 STRATEGY</h3>
+                <p>• Draw small areas first (10-20%)</p>
+                <p>• Don't draw long lines - the Fuse will get you!</p>
+                <p>• Use FAST mode only for short distances</p>
+                <p>• Trap Qwump in a tiny corner</p>
+            </div>
+        </div>
+
+        <button class="btn back" id="btnBack">← BACK TO MENU</button>
+    </div>
+
+    <!-- Game Over Screen -->
+    <div id="gameOverScreen" class="screen">
+        <h1>GAME OVER</h1>
+        <div id="finalScore" style="color: #fff; font-size: 24px; margin-bottom: 20px;">SCORE: 0</div>
+        <button class="btn" id="btnRetry">TRY AGAIN</button>
+        <button class="btn secondary" id="btnMenu">MAIN MENU</button>
+    </div>
+
+    <!-- Game Area -->
+    <div id="gameArea">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+            <div class="scanlines"></div>
+            <div class="crt-glow"></div>
+            
+            <div id="ui">
+                <div id="score">SCORE: 000000</div>
+                <div id="lives">LIVES: 3</div>
+                <div id="percentage">CLAIMED: 0%</div>
+                <div id="levelDisplay">LEVEL: 1</div>
+            </div>
+            
+            <div class="draw-hint" id="drawHint">Press RIGHT to draw →</div>
+        </div>
+
+        <div id="controls">
+            <div id="dPad">
+                <div class="dBtn" id="dUp" data-dir="up">▲</div>
+                <div class="dBtn" id="dDown" data-dir="down">▼</div>
+                <div class="dBtn" id="dLeft" data-dir="left">◀</div>
+                <div class="dBtn" id="dRight" data-dir="right">▶</div>
+            </div>
+            <div id="actionButtons">
+                <div class="actionBtn" id="fastBtn">FAST</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Context
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        const Sounds = {
+            init() {
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            },
+
+            qixHum() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80 + Math.random() * 40, audioCtx.currentTime);
+                
+                filter.type = 'bandpass';
+                filter.frequency.value = 300 + Math.random() * 200;
+                filter.Q.value = 5;
+                
+                gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            },
+
+            stixDraw() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.03);
+                
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.03);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.03);
+            },
+
+            claimArea() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            },
+
+            explosion() {
+                if (!audioCtx) return;
+                const bufferSize = audioCtx.sampleRate * 0.4;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/bufferSize, 2);
+                }
+                
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.4);
+                
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                noise.start();
+            },
+
+            levelComplete() {
+                if (!audioCtx) return;
+                const notes = [330, 392, 494, 659, 784];
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'square';
+                    osc.frequency.value = freq;
+                    
+                    const time = audioCtx.currentTime + i * 0.08;
+                    gain.gain.setValueAtTime(0.08, time);
+                    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(time);
+                    osc.stop(time + 0.15);
+                });
+            }
+        };
+
+        // Game Constants
+        const CANVAS_WIDTH = 300;
+        const CANVAS_HEIGHT = 400;
+        const GRID_SIZE = 10;
+        const COLS = 30;
+        const ROWS = 40;
+
+        // Game State
+        let canvas, ctx;
+        let gameLoop;
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let claimedPercent = 0;
+        let highScore = localStorage.getItem('qwumpHighScore') || 0;
+        let isGameOver = false;
+
+        // Entities
+        let player = { x: 0, y: 20, dx: 0, dy: 0, isDrawing: false, fast: false };
+        let qwump = { x: 150, y: 200, dx: 2, dy: 1.5, tail: [] };
+        let sparx = [];
+        let fuse = null;
+        let grid = [];
+        let path = [];
+        let particles = [];
+
+        // Touch controls
+        let touchState = { up: false, down: false, left: false, right: false, fast: false };
+
+        function init() {
+            // Setup button listeners
+            document.getElementById('btnHowToPlay').addEventListener('click', showHowToPlay);
+            document.getElementById('btnStart').addEventListener('click', startGame);
+            document.getElementById('btnBack').addEventListener('click', backToStart);
+            document.getElementById('btnRetry').addEventListener('click', restartGame);
+            document.getElementById('btnMenu').addEventListener('click', backToMenu);
+            
+            // Setup canvas
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = CANVAS_WIDTH * dpr;
+            canvas.height = CANVAS_HEIGHT * dpr;
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+            ctx.scale(dpr, dpr);
+            
+            document.getElementById('highScore').textContent = 'HIGH SCORE: ' + highScore.toString().padStart(6, '0');
+            
+            setupControls();
+            initGrid();
+        }
+
+        function initGrid() {
+            grid = [];
+            for (let x = 0; x < COLS; x++) {
+                grid[x] = [];
+                for (let y = 0; y < ROWS; y++) {
+                    if (x === 0 || x === COLS-1 || y === 0 || y === ROWS-1) {
+                        grid[x][y] = 1; // Border/claimed
+                    } else {
+                        grid[x][y] = 0; // Unclaimed
+                    }
+                }
+            }
+            calculateClaimed();
+        }
+
+        function setupControls() {
+            const dBtns = document.querySelectorAll('.dBtn');
+            dBtns.forEach(btn => {
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    touchState[btn.dataset.dir] = true;
+                    btn.classList.add('active');
+                });
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    touchState[btn.dataset.dir] = false;
+                    btn.classList.remove('active');
+                });
+            });
+
+            const fastBtn = document.getElementById('fastBtn');
+            fastBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchState.fast = true;
+                fastBtn.classList.add('active');
+            });
+            fastBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                touchState.fast = false;
+                fastBtn.classList.remove('active');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': touchState.up = true; break;
+                    case 'ArrowDown': touchState.down = true; break;
+                    case 'ArrowLeft': touchState.left = true; break;
+                    case 'ArrowRight': touchState.right = true; break;
+                    case ' ': touchState.fast = true; break;
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': touchState.up = false; break;
+                    case 'ArrowDown': touchState.down = false; break;
+                    case 'ArrowLeft': touchState.left = false; break;
+                    case 'ArrowRight': touchState.right = false; break;
+                    case ' ': touchState.fast = false; break;
+                }
+            });
+        }
+
+        function showHowToPlay() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('howToPlayScreen').style.display = 'flex';
+        }
+
+        function backToStart() {
+            document.getElementById('howToPlayScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+        }
+
+        function backToMenu() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+            isGameOver = true;
+            cancelAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            Sounds.init();
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('howToPlayScreen').style.display = 'none';
+            document.getElementById('gameArea').style.display = 'flex';
+            
+            score = 0;
+            lives = 3;
+            level = 1;
+            initGrid();
+            resetLevel();
+            updateUI();
+            isGameOver = false;
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function resetLevel() {
+            // Start on left border, middle
+            player.x = 0;
+            player.y = 20;
+            player.dx = 0;
+            player.dy = 0;
+            player.isDrawing = false;
+            player.fast = false;
+            path = [];
+            
+            qwump.x = 150;
+            qwump.y = 200;
+            qwump.dx = (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.2);
+            qwump.dy = (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.2);
+            qwump.tail = [];
+            
+            sparx = [
+                { x: 0, y: 2, dir: 1, axis: 'y' },
+                { x: COLS-1, y: ROWS-3, dir: -1, axis: 'y' }
+            ];
+            
+            fuse = null;
+        }
+
+        function restartGame() {
+            score = 0;
+            lives = 3;
+            level = 1;
+            initGrid();
+            document.getElementById('gameOverScreen').style.display = 'none';
+            resetLevel();
+            updateUI();
+            isGameOver = false;
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            updatePlayer();
+            updateQwump();
+            updateSparx();
+            if (fuse) updateFuse();
+            updateParticles();
+            checkCollisions();
+            draw();
+            updateHint();
+            
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function updateHint() {
+            const hint = document.getElementById('drawHint');
+            if (player.isDrawing) {
+                hint.textContent = 'Return to GREEN border to claim!';
+                hint.style.color = '#0f0';
+            } else {
+                hint.textContent = 'Press RIGHT to draw →';
+                hint.style.color = '#0ff';
+            }
+        }
+
+        function updatePlayer() {
+            player.fast = touchState.fast;
+            const speed = player.fast ? 2 : 1;
+            
+            // Get desired direction from input
+            let wantDx = 0, wantDy = 0;
+            if (touchState.up) wantDy = -1;
+            else if (touchState.down) wantDy = 1;
+            else if (touchState.left) wantDx = -1;
+            else if (touchState.right) wantDx = 1;
+
+            // If we have input, try to move in that direction
+            if (wantDx !== 0 || wantDy !== 0) {
+                const nextX = player.x + wantDx;
+                const nextY = player.y + wantDy;
+                
+                // Check if move is valid
+                if (isValidMove(nextX, nextY)) {
+                    // START DRAWING: Moving from border/claimed (1) into unclaimed (0)
+                    if (!player.isDrawing && grid[player.x][player.y] === 1 && grid[nextX][nextY] === 0) {
+                        player.isDrawing = true;
+                        path = [{x: player.x, y: player.y}]; // Start path includes current position
+                        player.dx = wantDx;
+                        player.dy = wantDy;
+                    }
+                    // COMPLETE DRAWING: Moving from unclaimed (0 or 2) back to border/claimed (1)
+                    else if (player.isDrawing && grid[nextX][nextY] === 1) {
+                        player.dx = wantDx;
+                        player.dy = wantDy;
+                    }
+                    // CONTINUE MOVING
+                    else {
+                        player.dx = wantDx;
+                        player.dy = wantDy;
+                    }
+                }
+            }
+
+            // Execute movement
+            for (let step = 0; step < speed; step++) {
+                if (player.dx === 0 && player.dy === 0) break;
+                
+                const nextX = player.x + player.dx;
+                const nextY = player.y + player.dy;
+                
+                // Check bounds
+                if (nextX < 0 || nextX >= COLS || nextY < 0 || nextY >= ROWS) {
+                    player.dx = 0;
+                    player.dy = 0;
+                    break;
+                }
+
+                // Check if completing draw (hitting border while drawing)
+                if (player.isDrawing && grid[nextX][nextY] === 1) {
+                    player.x = nextX;
+                    player.y = nextY;
+                    path.push({x: nextX, y: nextY});
+                    completeDraw();
+                    break;
+                }
+
+                // Check if hitting own line
+                if (player.isDrawing && grid[nextX][nextY] === 2) {
+                    playerDies();
+                    return;
+                }
+
+                // Move player
+                player.x = nextX;
+                player.y = nextY;
+                
+                // If drawing, mark path and check for fuse
+                if (player.isDrawing) {
+                    grid[nextX][nextY] = 2; // Mark as drawing line
+                    path.push({x: nextX, y: nextY});
+                    Sounds.stixDraw();
+                    
+                    // Spawn fuse after drawing enough segments
+                    if (!fuse && path.length > 5) {
+                        fuse = { 
+                            x: path[0].x, 
+                            y: path[0].y, 
+                            pathIndex: 0, 
+                            timer: 0 
+                        };
+                    }
+                }
+            }
+        }
+
+        function isValidMove(x, y) {
+            if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+            
+            if (player.isDrawing) {
+                // When drawing: can move on unclaimed (0) or back to border (1)
+                // Cannot cross own line (2)
+                return grid[x][y] !== 2;
+            } else {
+                // When not drawing: must stay on claimed/border (1)
+                return grid[x][y] === 1;
+            }
+        }
+
+        function completeDraw() {
+            player.isDrawing = false;
+            player.dx = 0;
+            player.dy = 0;
+            
+            // Fill the area (the side WITHOUT Qwump)
+            fillArea();
+            
+            // Clear the drawing line from grid
+            for (let x = 0; x < COLS; x++) {
+                for (let y = 0; y < ROWS; y++) {
+                    if (grid[x][y] === 2) grid[x][y] = 0;
+                }
+            }
+            
+            path = [];
+            fuse = null;
+            
+            Sounds.claimArea();
+            calculateClaimed();
+            updateUI();
+            
+            // Check level complete
+            if (claimedPercent >= 75) {
+                Sounds.levelComplete();
+                setTimeout(() => {
+                    level++;
+                    score += 1000;
+                    initGrid();
+                    resetLevel();
+                    updateUI();
+                }, 500);
+            }
+        }
+
+        function fillArea() {
+            // Find where Qwump is
+            const qx = Math.floor(qwump.x / GRID_SIZE);
+            const qy = Math.floor(qwump.y / GRID_SIZE);
+            
+            // Create visited array
+            const visited = [];
+            for (let x = 0; x < COLS; x++) {
+                visited[x] = [];
+                for (let y = 0; y < ROWS; y++) visited[x][y] = false;
+            }
+            
+            // Flood fill from Qwump position to find what it can reach
+            const stack = [{
+                x: Math.max(1, Math.min(COLS-2, qx)), 
+                y: Math.max(1, Math.min(ROWS-2, qy))
+            }];
+            
+            while (stack.length > 0) {
+                const curr = stack.pop();
+                
+                // Bounds check
+                if (curr.x < 1 || curr.x >= COLS-1 || curr.y < 1 || curr.y >= ROWS-1) continue;
+                if (visited[curr.x][curr.y]) continue;
+                
+                // Stop at walls (claimed=1 or drawing=2)
+                if (grid[curr.x][curr.y] === 1 || grid[curr.x][curr.y] === 2) continue;
+                
+                visited[curr.x][curr.y] = true;
+                
+                // Add neighbors
+                stack.push({x: curr.x+1, y: curr.y});
+                stack.push({x: curr.x-1, y: curr.y});
+                stack.push({x: curr.x, y: curr.y+1});
+                stack.push({x: curr.x, y: curr.y-1});
+            }
+            
+            // Fill everything that WASN'T visited (not reachable by Qwump)
+            let filled = 0;
+            for (let x = 1; x < COLS-1; x++) {
+                for (let y = 1; y < ROWS-1; y++) {
+                    if (!visited[x][y] && grid[x][y] === 0) {
+                        grid[x][y] = 1; // Claim it!
+                        filled++;
+                    }
+                }
+            }
+            
+            score += filled * 10;
+        }
+
+        function updateQwump() {
+            qwump.x += qwump.dx;
+            qwump.y += qwump.dy;
+            
+            const gx = Math.floor(qwump.x / GRID_SIZE);
+            const gy = Math.floor(qwump.y / GRID_SIZE);
+            
+            // Bounce off claimed areas
+            for (let ox = -1; ox <= 1; ox++) {
+                for (let oy = -1; oy <= 1; oy++) {
+                    const checkX = gx + ox;
+                    const checkY = gy + oy;
+                    if (checkX >= 0 && checkX < COLS && checkY >= 0 && checkY < ROWS) {
+                        if (grid[checkX][checkY] === 1) {
+                            if (Math.abs(ox) > Math.abs(oy)) {
+                                qwump.dx *= -1;
+                                qwump.x += qwump.dx * 2;
+                            } else {
+                                qwump.dy *= -1;
+                                qwump.y += qwump.dy * 2;
+                            }
+                            qwump.dx += (Math.random() - 0.5) * 0.5;
+                            qwump.dy += (Math.random() - 0.5) * 0.5;
+                        }
+                    }
+                }
+            }
+            
+            // Keep in bounds
+            if (qwump.x < GRID_SIZE * 2) { qwump.x = GRID_SIZE * 2; qwump.dx = Math.abs(qwump.dx); }
+            if (qwump.x > CANVAS_WIDTH - GRID_SIZE * 2) { qwump.x = CANVAS_WIDTH - GRID_SIZE * 2; qwump.dx = -Math.abs(qwump.dx); }
+            if (qwump.y < GRID_SIZE * 2) { qwump.y = GRID_SIZE * 2; qwump.dy = Math.abs(qwump.dy); }
+            if (qwump.y > CANVAS_HEIGHT - GRID_SIZE * 2) { qwump.y = CANVAS_HEIGHT - GRID_SIZE * 2; qwump.dy = -Math.abs(qwump.dy); }
+            
+            // Random direction changes
+            if (Math.random() < 0.03) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.sqrt(qwump.dx*qwump.dx + qwump.dy*qwump.dy);
+                qwump.dx = Math.cos(angle) * speed;
+                qwump.dy = Math.sin(angle) * speed;
+            }
+            
+            // Update tail
+            qwump.tail.unshift({x: qwump.x, y: qwump.y});
+            if (qwump.tail.length > 8) qwump.tail.pop();
+            
+            Sounds.qixHum();
+        }
+
+        function updateSparx() {
+            sparx.forEach(s => {
+                if (s.axis === 'y') {
+                    s.y += s.dir;
+                    if (s.y >= ROWS-1) {
+                        s.y = ROWS-1;
+                        s.axis = 'x';
+                    } else if (s.y <= 0) {
+                        s.y = 0;
+                        s.axis = 'y';
+                        s.dir *= -1;
+                    }
+                } else {
+                    s.x += s.dir;
+                    if (s.x >= COLS-1) {
+                        s.x = COLS-1;
+                        s.axis = 'y';
+                        s.dir *= -1;
+                    } else if (s.x <= 0) {
+                        s.x = 0;
+                        s.axis = 'y';
+                    }
+                }
+            });
+        }
+
+        function updateFuse() {
+            if (!fuse || path.length < 2) return;
+            
+            fuse.timer++;
+            if (fuse.timer % 12 === 0) {
+                fuse.pathIndex++;
+                if (fuse.pathIndex >= path.length) {
+                    playerDies();
+                    return;
+                }
+                
+                fuse.x = path[fuse.pathIndex].x;
+                fuse.y = path[fuse.pathIndex].y;
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life--;
+                p.dx *= 0.95;
+                p.dy *= 0.95;
+                return p.life > 0;
+            });
+        }
+
+        function checkCollisions() {
+            const px = player.x * GRID_SIZE + GRID_SIZE/2;
+            const py = player.y * GRID_SIZE + GRID_SIZE/2;
+            const qx = qwump.x;
+            const qy = qwump.y;
+            
+            // Qwump collision with drawing line
+            if (player.isDrawing) {
+                for (let i = 0; i < path.length; i++) {
+                    const p = path[i];
+                    const lineX = p.x * GRID_SIZE + GRID_SIZE/2;
+                    const lineY = p.y * GRID_SIZE + GRID_SIZE/2;
+                    const dist = Math.sqrt((qx - lineX)**2 + (qy - lineY)**2);
+                    if (dist < 12) {
+                        playerDies();
+                        return;
+                    }
+                }
+            } else {
+                // Qwump collision with player
+                if (Math.sqrt((px - qx)**2 + (py - qy)**2) < 12) {
+                    playerDies();
+                    return;
+                }
+            }
+            
+            // Sparx collision
+            sparx.forEach(s => {
+                const sx = s.x * GRID_SIZE + GRID_SIZE/2;
+                const sy = s.y * GRID_SIZE + GRID_SIZE/2;
+                const dist = Math.sqrt((px - sx)**2 + (py - sy)**2);
+                if (dist < 10) {
+                    playerDies();
+                }
+            });
+            
+            // Fuse collision
+            if (fuse) {
+                const fx = fuse.x * GRID_SIZE + GRID_SIZE/2;
+                const fy = fuse.y * GRID_SIZE + GRID_SIZE/2;
+                const dist = Math.sqrt((px - fx)**2 + (py - fy)**2);
+                if (dist < 8) {
+                    playerDies();
+                }
+            }
+        }
+
+        function playerDies() {
+            Sounds.explosion();
+            createExplosion(player.x * GRID_SIZE + GRID_SIZE/2, player.y * GRID_SIZE + GRID_SIZE/2);
+            
+            lives--;
+            updateUI();
+            
+            if (lives <= 0) {
+                setTimeout(gameOver, 500);
+            } else {
+                // Clear drawing line
+                path.forEach(p => {
+                    if (grid[p.x][p.y] === 2) grid[p.x][p.y] = 0;
+                });
+                path = [];
+                fuse = null;
+                player.isDrawing = false;
+                player.dx = 0;
+                player.dy = 0;
+                player.x = 0;
+                player.y = 20;
+            }
+        }
+
+        function createExplosion(x, y) {
+            for (let i = 0; i < 30; i++) {
+                const angle = (Math.PI * 2 * i) / 30;
+                const speed = 2 + Math.random() * 3;
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: Math.cos(angle) * speed,
+                    dy: Math.sin(angle) * speed,
+                    life: 40,
+                    color: `hsl(${Math.random() * 60 + 10}, 100%, 50%)`
+                });
+            }
+        }
+
+        function calculateClaimed() {
+            let total = (COLS - 2) * (ROWS - 2);
+            let claimedCount = 0;
+            for (let x = 1; x < COLS - 1; x++) {
+                for (let y = 1; y < ROWS - 1; y++) {
+                    if (grid[x][y] === 1) claimedCount++;
+                }
+            }
+            claimedPercent = Math.floor((claimedCount / total) * 100);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw grid
+            for (let x = 0; x < COLS; x++) {
+                for (let y = 0; y < ROWS; y++) {
+                    const px = x * GRID_SIZE;
+                    const py = y * GRID_SIZE;
+                    
+                    if (grid[x][y] === 1) {
+                        // Claimed/border - green
+                        ctx.fillStyle = '#001100';
+                        ctx.fillRect(px, py, GRID_SIZE, GRID_SIZE);
+                        ctx.strokeStyle = '#00ff00';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(px + 0.5, py + 0.5, GRID_SIZE - 1, GRID_SIZE - 1);
+                    } else if (grid[x][y] === 2) {
+                        // Drawing line - cyan
+                        ctx.fillStyle = '#00ffff';
+                        ctx.fillRect(px, py, GRID_SIZE, GRID_SIZE);
+                    } else {
+                        // Unclaimed - dark grid
+                        ctx.strokeStyle = '#222';
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(px + 0.5, py + 0.5, GRID_SIZE - 1, GRID_SIZE - 1);
+                    }
+                }
+            }
+            
+            // Draw path line more prominently
+            if (path.length > 1) {
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#00ffff';
+                
+                ctx.beginPath();
+                path.forEach((p, i) => {
+                    const px = p.x * GRID_SIZE + GRID_SIZE/2;
+                    const py = p.y * GRID_SIZE + GRID_SIZE/2;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw Player
+            const playerPx = player.x * GRID_SIZE + GRID_SIZE/2;
+            const playerPy = player.y * GRID_SIZE + GRID_SIZE/2;
+            
+            ctx.fillStyle = player.fast ? '#ffaa00' : '#ffff00';
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = player.fast ? '#ffaa00' : '#ffff00';
+            
+            if (player.isDrawing) {
+                // Diamond when drawing
+                ctx.beginPath();
+                ctx.moveTo(playerPx, playerPy - 5);
+                ctx.lineTo(playerPx + 5, playerPy);
+                ctx.lineTo(playerPx, playerPy + 5);
+                ctx.lineTo(playerPx - 5, playerPy);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                // Square on border
+                ctx.fillRect(playerPx - 5, playerPy - 5, 10, 10);
+            }
+            ctx.shadowBlur = 0;
+            
+            // Draw Qwump
+            ctx.save();
+            
+            qwump.tail.forEach((t, i) => {
+                const alpha = 1 - (i / qwump.tail.length);
+                const size = 5 + (qwump.tail.length - i) * 0.5;
+                ctx.fillStyle = `rgba(255, 0, 255, ${alpha * 0.6})`;
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, size/2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            ctx.translate(qwump.x, qwump.y);
+            ctx.rotate(Date.now() / 150);
+            
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 20);
+            gradient.addColorStop(0, 'rgba(255, 0, 255, 1)');
+            gradient.addColorStop(0.5, 'rgba(255, 0, 255, 0.5)');
+            gradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(-20, -20, 40, 40);
+            
+            ctx.fillStyle = '#ff00ff';
+            ctx.beginPath();
+            ctx.moveTo(0, -8);
+            ctx.lineTo(8, 0);
+            ctx.lineTo(0, 8);
+            ctx.lineTo(-8, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-3, -3, 6, 6);
+            
+            ctx.restore();
+            
+            // Draw Sparx
+            sparx.forEach(s => {
+                const sx = s.x * GRID_SIZE + GRID_SIZE/2;
+                const sy = s.y * GRID_SIZE + GRID_SIZE/2;
+                
+                ctx.fillStyle = '#ff0000';
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = '#ff0000';
+                
+                ctx.beginPath();
+                ctx.moveTo(sx, sy - 6);
+                ctx.lineTo(sx + 4, sy);
+                ctx.lineTo(sx, sy + 6);
+                ctx.lineTo(sx - 4, sy);
+                ctx.closePath();
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+            
+            // Draw Fuse
+            if (fuse) {
+                const fx = fuse.x * GRID_SIZE + GRID_SIZE/2;
+                const fy = fuse.y * GRID_SIZE + GRID_SIZE/2;
+                
+                ctx.fillStyle = '#ff6600';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff6600';
+                
+                const pulse = 1 + Math.sin(Date.now() / 30) * 0.4;
+                ctx.beginPath();
+                ctx.arc(fx, fy, 4 * pulse, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw particles
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 40;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = 'SCORE: ' + score.toString().padStart(6, '0');
+            document.getElementById('lives').textContent = 'LIVES: ' + lives;
+            document.getElementById('percentage').textContent = 'CLAIMED: ' + claimedPercent + '%';
+            document.getElementById('levelDisplay').textContent = 'LEVEL: ' + level;
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            cancelAnimationFrame(gameLoop);
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('qwumpHighScore', highScore);
+                document.getElementById('highScore').textContent = 'HIGH SCORE: ' + highScore.toString().padStart(6, '0');
+            }
+            
+            document.getElementById('finalScore').textContent = 'SCORE: ' + score;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
             background: #000;
             padding-top: 10px;
         }
