@@ -31,9 +31,1289 @@
             width: 100%;
             height: 100%;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
+            justify-content: flex-start;
             align-items: center;
             background: #000;
+            padding-top: 10px;
+        }
+
+        #canvasContainer {
+            position: relative;
+            width: 300px;
+            height: 400px;
+            margin: 0 auto;
+            border: 2px solid #0f0;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+            flex-shrink: 0;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            background: #000;
+        }
+
+        /* CRT Scanline Effect */
+        .scanlines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.2) 50%,
+                rgba(0,0,0,0.2)
+            );
+            background-size: 100% 4px;
+            z-index: 10;
+        }
+
+        .crt-glow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+            z-index: 11;
+        }
+
+        /* UI Overlay */
+        #ui {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        #score {
+            position: absolute;
+            top: 5px;
+            left: 10px;
+            color: #0ff;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #0ff;
+            letter-spacing: 2px;
+        }
+
+        #lives {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            color: #f0f;
+            font-size: 14px;
+            font-weight: bold;
+            text-shadow: 0 0 10px #f0f;
+        }
+
+        #percentage {
+            position: absolute;
+            top: 22px;
+            left: 10px;
+            color: #ff0;
+            font-size: 12px;
+            text-shadow: 0 0 5px #ff0;
+        }
+
+        #levelDisplay {
+            position: absolute;
+            top: 22px;
+            right: 10px;
+            color: #0f0;
+            font-size: 12px;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        /* Screens */
+        .screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.98);
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            pointer-events: auto;
+            z-index: 100;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #startScreen {
+            display: flex;
+            justify-content: center;
+        }
+
+        #howToPlayScreen, #gameOverScreen {
+            display: none;
+        }
+
+        h1 {
+            color: #f0f;
+            font-size: 48px;
+            text-shadow: 0 0 20px #f0f, 0 0 40px #f0f;
+            margin: 30px 0 20px 0;
+            animation: pulse 2s infinite;
+            letter-spacing: 8px;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.05); }
+        }
+
+        .btn {
+            background: transparent;
+            border: 3px solid #0ff;
+            color: #0ff;
+            padding: 15px 40px;
+            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px #0ff, inset 0 0 10px rgba(0,255,255,0.2);
+            transition: all 0.3s;
+            min-width: 250px;
+            text-align: center;
+        }
+
+        .btn:active {
+            background: #0ff;
+            color: #000;
+            transform: scale(0.95);
+        }
+
+        .btn.secondary {
+            border-color: #f0f;
+            color: #f0f;
+            box-shadow: 0 0 10px #f0f, inset 0 0 10px rgba(255,0,255,0.2);
+        }
+
+        .btn.secondary:active {
+            background: #f0f;
+            color: #000;
+        }
+
+        .btn.back {
+            border-color: #ff0;
+            color: #ff0;
+            box-shadow: 0 0 10px #ff0, inset 0 0 10px rgba(255,255,0,0.2);
+            margin-top: 30px;
+        }
+
+        .btn.back:active {
+            background: #ff0;
+            color: #000;
+        }
+
+        /* How to Play Styles */
+        .instructions-container {
+            color: #fff;
+            text-align: left;
+            margin: 10px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 320px;
+            width: 100%;
+        }
+
+        .instruction-section {
+            margin-bottom: 12px;
+            padding: 10px;
+            border-left: 3px solid #0ff;
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        .instruction-section h3 {
+            color: #0ff;
+            margin-bottom: 6px;
+            font-size: 16px;
+            text-shadow: 0 0 5px #0ff;
+        }
+
+        .instruction-section p {
+            margin-bottom: 4px;
+            color: #ccc;
+            font-size: 13px;
+        }
+
+        .warning {
+            border-left-color: #f00;
+            background: rgba(255, 0, 0, 0.05);
+        }
+
+        .warning h3 {
+            color: #f00;
+            text-shadow: 0 0 5px #f00;
+        }
+
+        .tip {
+            border-left-color: #ff0;
+            background: rgba(255, 255, 0, 0.05);
+        }
+
+        .tip h3 {
+            color: #ff0;
+            text-shadow: 0 0 5px #ff0;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 5px;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        .control-key {
+            color: #0ff;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .control-action {
+            color: #fff;
+        }
+
+        #highScore {
+            color: #0f0;
+            font-size: 18px;
+            margin-top: 20px;
+            text-shadow: 0 0 5px #0f0;
+        }
+
+        /* Touch Controls */
+        #controls {
+            width: 100%;
+            height: 140px;
+            pointer-events: auto;
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 20px;
+            margin-top: 10px;
+            flex-shrink: 0;
+        }
+
+        #dPad {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+
+        .dBtn {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,255,255,0.2);
+            border: 2px solid #0ff;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #0ff;
+            font-size: 20px;
+            user-select: none;
+        }
+
+        .dBtn:active, .dBtn.active {
+            background: rgba(0,255,255,0.6);
+            box-shadow: 0 0 15px #0ff;
+        }
+
+        #dUp { top: 0; left: 40px; }
+        #dDown { bottom: 0; left: 40px; }
+        #dLeft { top: 40px; left: 0; }
+        #dRight { top: 40px; right: 0; }
+
+        #actionButtons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .actionBtn {
+            width: 80px;
+            height: 60px;
+            background: rgba(255,0,255,0.2);
+            border: 3px solid #f0f;
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #f0f;
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: 0 0 10px rgba(255,0,255,0.5);
+        }
+
+        .actionBtn:active, .actionBtn.active {
+            background: rgba(255,0,255,0.6);
+            transform: scale(0.95);
+            box-shadow: 0 0 20px #f0f;
+        }
+
+        .hidden { display: none !important; }
+
+        .colorQ { color: #f0f; text-shadow: 0 0 5px #f0f; font-weight: bold; }
+        .colorS { color: #f00; text-shadow: 0 0 5px #f00; font-weight: bold; }
+        .colorF { color: #ff6600; text-shadow: 0 0 5px #ff6600; font-weight: bold; }
+        .colorP { color: #ff0; text-shadow: 0 0 5px #ff0; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <!-- Start Screen -->
+        <div id="startScreen" class="screen">
+            <h1>QWUMP!</h1>
+            <button class="btn" onclick="showHowToPlay()">HOW TO PLAY</button>
+            <button class="btn secondary" onclick="startGame()">START GAME</button>
+            <div id="highScore">HIGH SCORE: 000000</div>
+        </div>
+
+        <!-- How to Play Screen -->
+        <div id="howToPlayScreen" class="screen">
+            <h1 style="font-size: 32px; margin-bottom: 15px;">HOW TO PLAY</h1>
+            
+            <div class="instructions-container">
+                <div class="instruction-section">
+                    <h3>🎯 OBJECTIVE</h3>
+                    <p>Claim <span class="colorQ">75% of the playfield</span> to advance.</p>
+                    <p>Draw lines from the <span class="colorP">yellow marker</span> on the border into the unclaimed area. Return to the border to claim territory!</p>
+                </div>
+
+                <div class="instruction-section">
+                    <h3>🎮 CONTROLS</h3>
+                    <p><span class="control-key">D-PAD:</span> Move along borders and lines</p>
+                    <p><span class="control-key">FAST:</span> Hold to move faster (Risky!)</p>
+                </div>
+
+                <div class="instruction-section warning">
+                    <h3>⚠️ ENEMIES</h3>
+                    <p><span class="colorQ">QWUMP</span> - Sparking helix in center. <span class="colorQ">NEVER touch your line while drawing!</span></p>
+                    <p><span class="colorS">SPARX</span> - Red sparks on borders. Avoid!</p>
+                    <p><span class="colorF">FUSE</span> - Appears if you hesitate. Follows your line!</p>
+                </div>
+
+                <div class="instruction-section tip">
+                    <h3>💡 TIPS</h3>
+                    <p>• Start with small areas</p>
+                    <p>• Draw quickly to avoid Fuse</p>
+                    <p>• Use FAST only when safe</p>
+                </div>
+            </div>
+
+            <button class="btn back" onclick="backToStart()">← BACK TO MENU</button>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="screen">
+            <h1>GAME OVER</h1>
+            <div id="finalScore" style="color: #fff; font-size: 24px; margin-bottom: 20px;">SCORE: 0</div>
+            <button class="btn" onclick="restartGame()">TRY AGAIN</button>
+            <button class="btn secondary" onclick="backToMenu()">MAIN MENU</button>
+        </div>
+
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+            <div class="scanlines"></div>
+            <div class="crt-glow"></div>
+            
+            <div id="ui">
+                <div id="score">SCORE: 000000</div>
+                <div id="lives">LIVES: 3</div>
+                <div id="percentage">CLAIMED: 0%</div>
+                <div id="levelDisplay">LEVEL: 1</div>
+            </div>
+        </div>
+
+        <!-- Touch Controls -->
+        <div id="controls" class="hidden">
+            <div id="dPad">
+                <div class="dBtn" id="dUp" data-dir="up">▲</div>
+                <div class="dBtn" id="dDown" data-dir="down">▼</div>
+                <div class="dBtn" id="dLeft" data-dir="left">◀</div>
+                <div class="dBtn" id="dRight" data-dir="right">▶</div>
+            </div>
+            <div id="actionButtons">
+                <div class="actionBtn" id="fastBtn">FAST</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Audio Context
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        const Sounds = {
+            init() {
+                if (!audioCtx) {
+                    audioCtx = new AudioContext();
+                }
+                if (audioCtx.state === 'suspended') {
+                    audioCtx.resume();
+                }
+            },
+
+            qixHum() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const filter = audioCtx.createBiquadFilter();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(80 + Math.random() * 40, audioCtx.currentTime);
+                
+                filter.type = 'bandpass';
+                filter.frequency.value = 300 + Math.random() * 200;
+                filter.Q.value = 5;
+                
+                gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.05);
+            },
+
+            stixDraw() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.03);
+                
+                gain.gain.setValueAtTime(0.02, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.03);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.03);
+            },
+
+            claimArea() {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.2);
+                
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            },
+
+            explosion() {
+                if (!audioCtx) return;
+                const bufferSize = audioCtx.sampleRate * 0.4;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i/bufferSize, 2);
+                }
+                
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const filter = audioCtx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.4);
+                
+                const gain = audioCtx.createGain();
+                gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                noise.start();
+            },
+
+            levelComplete() {
+                if (!audioCtx) return;
+                const notes = [330, 392, 494, 659, 784];
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'square';
+                    osc.frequency.value = freq;
+                    
+                    const time = audioCtx.currentTime + i * 0.08;
+                    gain.gain.setValueAtTime(0.08, time);
+                    gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+                    
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    osc.start(time);
+                    osc.stop(time + 0.15);
+                });
+            }
+        };
+
+        // Game Constants
+        const CANVAS_WIDTH = 300;
+        const CANVAS_HEIGHT = 400;
+        const GRID_SIZE = 10;
+        const COLS = 30;
+        const ROWS = 40;
+
+        // Game State
+        let canvas, ctx;
+        let gameLoop;
+        let score = 0;
+        let lives = 3;
+        let level = 1;
+        let claimedPercent = 0;
+        let highScore = localStorage.getItem('qwumpHighScore') || 0;
+        let isGameOver = false;
+
+        // Entities
+        let player = { x: 0, y: 20, dx: 0, dy: 0, isDrawing: false, fast: false };
+        let qwump = { x: 150, y: 200, dx: 2, dy: 1.5, tail: [] };
+        let sparx = [];
+        let fuse = null;
+        let grid = [];
+        let path = [];
+        let particles = [];
+
+        // Touch controls
+        let touchState = { up: false, down: false, left: false, right: false, fast: false };
+        let lastInputDir = null;
+
+        function init() {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = CANVAS_WIDTH * dpr;
+            canvas.height = CANVAS_HEIGHT * dpr;
+            canvas.style.width = CANVAS_WIDTH + 'px';
+            canvas.style.height = CANVAS_HEIGHT + 'px';
+            ctx.scale(dpr, dpr);
+            
+            document.getElementById('highScore').textContent = 'HIGH SCORE: ' + highScore.toString().padStart(6, '0');
+            
+            setupControls();
+            initGrid();
+        }
+
+        function initGrid() {
+            grid = [];
+            for (let x = 0; x < COLS; x++) {
+                grid[x] = [];
+                for (let y = 0; y < ROWS; y++) {
+                    if (x === 0 || x === COLS-1 || y === 0 || y === ROWS-1) {
+                        grid[x][y] = 1;
+                    } else {
+                        grid[x][y] = 0;
+                    }
+                }
+            }
+            calculateClaimed();
+        }
+
+        function setupControls() {
+            const dBtns = document.querySelectorAll('.dBtn');
+            dBtns.forEach(btn => {
+                btn.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    touchState[btn.dataset.dir] = true;
+                    lastInputDir = btn.dataset.dir;
+                    btn.classList.add('active');
+                });
+                btn.addEventListener('touchend', (e) => {
+                    e.preventDefault();
+                    touchState[btn.dataset.dir] = false;
+                    btn.classList.remove('active');
+                });
+            });
+
+            const fastBtn = document.getElementById('fastBtn');
+            fastBtn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                touchState.fast = true;
+                fastBtn.classList.add('active');
+            });
+            fastBtn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                touchState.fast = false;
+                fastBtn.classList.remove('active');
+            });
+
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': touchState.up = true; lastInputDir = 'up'; break;
+                    case 'ArrowDown': touchState.down = true; lastInputDir = 'down'; break;
+                    case 'ArrowLeft': touchState.left = true; lastInputDir = 'left'; break;
+                    case 'ArrowRight': touchState.right = true; lastInputDir = 'right'; break;
+                    case ' ': touchState.fast = true; break;
+                }
+            });
+
+            document.addEventListener('keyup', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp': touchState.up = false; break;
+                    case 'ArrowDown': touchState.down = false; break;
+                    case 'ArrowLeft': touchState.left = false; break;
+                    case 'ArrowRight': touchState.right = false; break;
+                    case ' ': touchState.fast = false; break;
+                }
+            });
+        }
+
+        function showHowToPlay() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('howToPlayScreen').style.display = 'flex';
+        }
+
+        function backToStart() {
+            document.getElementById('howToPlayScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+        }
+
+        function backToMenu() {
+            document.getElementById('gameOverScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'flex';
+            document.getElementById('controls').classList.add('hidden');
+        }
+
+        function startGame() {
+            Sounds.init();
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('howToPlayScreen').style.display = 'none';
+            document.getElementById('controls').classList.remove('hidden');
+            
+            score = 0;
+            lives = 3;
+            level = 1;
+            initGrid();
+            resetLevel();
+            updateUI();
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function resetLevel() {
+            player.x = 0;
+            player.y = 20;
+            player.dx = 0;
+            player.dy = 0;
+            player.isDrawing = false;
+            player.fast = false;
+            path = [];
+            
+            qwump.x = 150;
+            qwump.y = 200;
+            qwump.dx = (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.2);
+            qwump.dy = (Math.random() > 0.5 ? 1 : -1) * (1.5 + level * 0.2);
+            qwump.tail = [];
+            
+            sparx = [
+                { x: 0, y: 2, dir: 1, axis: 'y' },
+                { x: COLS-1, y: ROWS-3, dir: -1, axis: 'y' }
+            ];
+            
+            fuse = null;
+            isGameOver = false;
+        }
+
+        function restartGame() {
+            score = 0;
+            lives = 3;
+            level = 1;
+            initGrid();
+            document.getElementById('gameOverScreen').style.display = 'none';
+            resetLevel();
+            updateUI();
+        }
+
+        function update() {
+            if (isGameOver) return;
+
+            updatePlayer();
+            updateQwump();
+            updateSparx();
+            if (fuse) updateFuse();
+            updateParticles();
+            checkCollisions();
+            draw();
+            
+            gameLoop = requestAnimationFrame(update);
+        }
+
+        function updatePlayer() {
+            player.fast = touchState.fast;
+            const speed = player.fast ? 2 : 1;
+            
+            // Determine desired direction from input
+            let wantDx = 0, wantDy = 0;
+            if (touchState.up) wantDy = -1;
+            else if (touchState.down) wantDy = 1;
+            else if (touchState.left) wantDx = -1;
+            else if (touchState.right) wantDx = 1;
+
+            // If we have input, try to move
+            if (wantDx !== 0 || wantDy !== 0) {
+                // Check if we can move in desired direction
+                const nextX = player.x + wantDx;
+                const nextY = player.y + wantDy;
+                
+                if (isValidMove(nextX, nextY)) {
+                    // Check if starting to draw (moving from border/claimed to unclaimed)
+                    if (!player.isDrawing && grid[player.x][player.y] === 1 && grid[nextX][nextY] === 0) {
+                        player.isDrawing = true;
+                        path = [{x: player.x, y: player.y}];
+                        player.dx = wantDx;
+                        player.dy = wantDy;
+                    }
+                    // Check if completing draw (moving from unclaimed to border/claimed)
+                    else if (player.isDrawing && grid[nextX][nextY] === 1) {
+                        player.dx = wantDx;
+                        player.dy = wantDy;
+                    }
+                    // Normal movement
+                    else {
+                        player.dx = wantDx;
+                        player.dy = wantDy;
+                    }
+                }
+            }
+
+            // Execute movement
+            for (let step = 0; step < speed; step++) {
+                if (player.dx === 0 && player.dy === 0) break;
+                
+                const nextX = player.x + player.dx;
+                const nextY = player.y + player.dy;
+                
+                if (!isValidMove(nextX, nextY)) {
+                    player.dx = 0;
+                    player.dy = 0;
+                    break;
+                }
+
+                // Check for completing draw
+                if (player.isDrawing && grid[nextX][nextY] === 1) {
+                    player.x = nextX;
+                    player.y = nextY;
+                    path.push({x: nextX, y: nextY});
+                    completeDraw();
+                    break;
+                }
+
+                player.x = nextX;
+                player.y = nextY;
+                
+                if (player.isDrawing) {
+                    // Check self-collision
+                    if (grid[nextX][nextY] === 2) {
+                        playerDies();
+                        return;
+                    }
+                    grid[nextX][nextY] = 2;
+                    path.push({x: nextX, y: nextY});
+                    Sounds.stixDraw();
+                    
+                    // Spawn fuse after drawing enough
+                    if (!fuse && path.length > 6) {
+                        fuse = { x: path[0].x, y: path[0].y, pathIndex: 0, timer: 0 };
+                    }
+                }
+            }
+        }
+
+        function isValidMove(x, y) {
+            if (x < 0 || x >= COLS || y < 0 || y >= ROWS) return false;
+            if (player.isDrawing) {
+                return grid[x][y] !== 2; // Can't cross own line
+            } else {
+                return grid[x][y] === 1; // Must stay on border/claimed
+            }
+        }
+
+        function completeDraw() {
+            player.isDrawing = false;
+            player.dx = 0;
+            player.dy = 0;
+            
+            fillArea();
+            
+            // Clear drawing line
+            for (let x = 0; x < COLS; x++) {
+                for (let y = 0; y < ROWS; y++) {
+                    if (grid[x][y] === 2) grid[x][y] = 0;
+                }
+            }
+            
+            path = [];
+            fuse = null;
+            
+            Sounds.claimArea();
+            calculateClaimed();
+            updateUI();
+            
+            if (claimedPercent >= 75) {
+                Sounds.levelComplete();
+                setTimeout(() => {
+                    level++;
+                    score += 1000;
+                    initGrid();
+                    resetLevel();
+                    updateUI();
+                }, 500);
+            }
+        }
+
+        function fillArea() {
+            const qx = Math.floor(qwump.x / GRID_SIZE);
+            const qy = Math.floor(qwump.y / GRID_SIZE);
+            
+            const visited = [];
+            for (let x = 0; x < COLS; x++) {
+                visited[x] = [];
+                for (let y = 0; y < ROWS; y++) visited[x][y] = false;
+            }
+            
+            // Mark path as walls for flood fill
+            const tempGrid = [];
+            for (let x = 0; x < COLS; x++) {
+                tempGrid[x] = [];
+                for (let y = 0; y < ROWS; y++) {
+                    tempGrid[x][y] = grid[x][y];
+                }
+            }
+            
+            const stack = [{x: Math.max(1, Math.min(COLS-2, qx)), y: Math.max(1, Math.min(ROWS-2, qy))}];
+            
+            while (stack.length > 0) {
+                const curr = stack.pop();
+                if (curr.x < 1 || curr.x >= COLS-1 || curr.y < 1 || curr.y >= ROWS-1) continue;
+                if (visited[curr.x][curr.y]) continue;
+                if (tempGrid[curr.x][curr.y] === 1 || tempGrid[curr.x][curr.y] === 2) continue;
+                
+                visited[curr.x][curr.y] = true;
+                
+                stack.push({x: curr.x+1, y: curr.y});
+                stack.push({x: curr.x-1, y: curr.y});
+                stack.push({x: curr.x, y: curr.y+1});
+                stack.push({x: curr.x, y: curr.y-1});
+            }
+            
+            // Fill unvisited areas (not containing Qwump)
+            let filled = 0;
+            for (let x = 1; x < COLS-1; x++) {
+                for (let y = 1; y < ROWS-1; y++) {
+                    if (!visited[x][y] && grid[x][y] === 0) {
+                        grid[x][y] = 1;
+                        filled++;
+                    }
+                }
+            }
+            
+            score += filled * 10;
+        }
+
+        function updateQwump() {
+            qwump.x += qwump.dx;
+            qwump.y += qwump.dy;
+            
+            const gx = Math.floor(qwump.x / GRID_SIZE);
+            const gy = Math.floor(qwump.y / GRID_SIZE);
+            
+            // Bounce off claimed areas
+            for (let ox = -1; ox <= 1; ox++) {
+                for (let oy = -1; oy <= 1; oy++) {
+                    const checkX = gx + ox;
+                    const checkY = gy + oy;
+                    if (checkX >= 0 && checkX < COLS && checkY >= 0 && checkY < ROWS) {
+                        if (grid[checkX][checkY] === 1) {
+                            if (Math.abs(ox) > Math.abs(oy)) {
+                                qwump.dx *= -1;
+                                qwump.x += qwump.dx * 2;
+                            } else {
+                                qwump.dy *= -1;
+                                qwump.y += qwump.dy * 2;
+                            }
+                            qwump.dx += (Math.random() - 0.5) * 0.5;
+                            qwump.dy += (Math.random() - 0.5) * 0.5;
+                        }
+                    }
+                }
+            }
+            
+            // Keep in bounds
+            if (qwump.x < GRID_SIZE * 2) { qwump.x = GRID_SIZE * 2; qwump.dx = Math.abs(qwump.dx); }
+            if (qwump.x > CANVAS_WIDTH - GRID_SIZE * 2) { qwump.x = CANVAS_WIDTH - GRID_SIZE * 2; qwump.dx = -Math.abs(qwump.dx); }
+            if (qwump.y < GRID_SIZE * 2) { qwump.y = GRID_SIZE * 2; qwump.dy = Math.abs(qwump.dy); }
+            if (qwump.y > CANVAS_HEIGHT - GRID_SIZE * 2) { qwump.y = CANVAS_HEIGHT - GRID_SIZE * 2; qwump.dy = -Math.abs(qwump.dy); }
+            
+            if (Math.random() < 0.03) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.sqrt(qwump.dx*qwump.dx + qwump.dy*qwump.dy);
+                qwump.dx = Math.cos(angle) * speed;
+                qwump.dy = Math.sin(angle) * speed;
+            }
+            
+            qwump.tail.unshift({x: qwump.x, y: qwump.y});
+            if (qwump.tail.length > 8) qwump.tail.pop();
+            
+            Sounds.qixHum();
+        }
+
+        function updateSparx() {
+            sparx.forEach(s => {
+                if (s.axis === 'y') {
+                    s.y += s.dir;
+                    if (s.y >= ROWS-1) {
+                        s.y = ROWS-1;
+                        s.axis = 'x';
+                    } else if (s.y <= 0) {
+                        s.y = 0;
+                        s.axis = 'y';
+                        s.dir *= -1;
+                    }
+                } else {
+                    s.x += s.dir;
+                    if (s.x >= COLS-1) {
+                        s.x = COLS-1;
+                        s.axis = 'y';
+                        s.dir *= -1;
+                    } else if (s.x <= 0) {
+                        s.x = 0;
+                        s.axis = 'y';
+                    }
+                }
+            });
+        }
+
+        function updateFuse() {
+            if (!fuse || path.length < 2) return;
+            
+            fuse.timer++;
+            if (fuse.timer % 15 === 0) {
+                fuse.pathIndex++;
+                if (fuse.pathIndex >= path.length) {
+                    playerDies();
+                    return;
+                }
+                
+                fuse.x = path[fuse.pathIndex].x;
+                fuse.y = path[fuse.pathIndex].y;
+            }
+        }
+
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.dx;
+                p.y += p.dy;
+                p.life--;
+                p.dx *= 0.95;
+                p.dy *= 0.95;
+                return p.life > 0;
+            });
+        }
+
+        function checkCollisions() {
+            const px = player.x * GRID_SIZE + GRID_SIZE/2;
+            const py = player.y * GRID_SIZE + GRID_SIZE/2;
+            const qx = qwump.x;
+            const qy = qwump.y;
+            
+            // Qwump collision with line
+            if (player.isDrawing) {
+                for (let i = 0; i < path.length; i++) {
+                    const p = path[i];
+                    const lineX = p.x * GRID_SIZE + GRID_SIZE/2;
+                    const lineY = p.y * GRID_SIZE + GRID_SIZE/2;
+                    const dist = Math.sqrt((qx - lineX)**2 + (qy - lineY)**2);
+                    if (dist < 12) {
+                        playerDies();
+                        return;
+                    }
+                }
+            } else {
+                if (Math.sqrt((px - qx)**2 + (py - qy)**2) < 12) {
+                    playerDies();
+                    return;
+                }
+            }
+            
+            // Sparx collision
+            sparx.forEach(s => {
+                const sx = s.x * GRID_SIZE + GRID_SIZE/2;
+                const sy = s.y * GRID_SIZE + GRID_SIZE/2;
+                const dist = Math.sqrt((px - sx)**2 + (py - sy)**2);
+                if (dist < 10) {
+                    playerDies();
+                }
+            });
+            
+            // Fuse collision
+            if (fuse) {
+                const fx = fuse.x * GRID_SIZE + GRID_SIZE/2;
+                const fy = fuse.y * GRID_SIZE + GRID_SIZE/2;
+                const dist = Math.sqrt((px - fx)**2 + (py - fy)**2);
+                if (dist < 8) {
+                    playerDies();
+                }
+            }
+        }
+
+        function playerDies() {
+            Sounds.explosion();
+            createExplosion(player.x * GRID_SIZE + GRID_SIZE/2, player.y * GRID_SIZE + GRID_SIZE/2);
+            
+            lives--;
+            updateUI();
+            
+            if (lives <= 0) {
+                setTimeout(gameOver, 500);
+            } else {
+                path.forEach(p => {
+                    if (grid[p.x][p.y] === 2) grid[p.x][p.y] = 0;
+                });
+                path = [];
+                fuse = null;
+                player.isDrawing = false;
+                player.dx = 0;
+                player.dy = 0;
+                player.x = 0;
+                player.y = 20;
+            }
+        }
+
+        function createExplosion(x, y) {
+            for (let i = 0; i < 30; i++) {
+                const angle = (Math.PI * 2 * i) / 30;
+                const speed = 2 + Math.random() * 3;
+                particles.push({
+                    x: x,
+                    y: y,
+                    dx: Math.cos(angle) * speed,
+                    dy: Math.sin(angle) * speed,
+                    life: 40,
+                    color: `hsl(${Math.random() * 60 + 10}, 100%, 50%)`
+                });
+            }
+        }
+
+        function calculateClaimed() {
+            let total = (COLS - 2) * (ROWS - 2);
+            let claimedCount = 0;
+            for (let x = 1; x < COLS - 1; x++) {
+                for (let y = 1; y < ROWS - 1; y++) {
+                    if (grid[x][y] === 1) claimedCount++;
+                }
+            }
+            claimedPercent = Math.floor((claimedCount / total) * 100);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            
+            // Draw grid
+            for (let x = 0; x < COLS; x++) {
+                for (let y = 0; y < ROWS; y++) {
+                    const px = x * GRID_SIZE;
+                    const py = y * GRID_SIZE;
+                    
+                    if (grid[x][y] === 1) {
+                        ctx.fillStyle = '#001100';
+                        ctx.fillRect(px, py, GRID_SIZE, GRID_SIZE);
+                        ctx.strokeStyle = '#003300';
+                        ctx.lineWidth = 1;
+                        ctx.strokeRect(px + 0.5, py + 0.5, GRID_SIZE - 1, GRID_SIZE - 1);
+                    } else if (grid[x][y] === 0) {
+                        ctx.strokeStyle = '#111';
+                        ctx.lineWidth = 0.5;
+                        ctx.strokeRect(px + 0.5, py + 0.5, GRID_SIZE - 1, GRID_SIZE - 1);
+                    }
+                }
+            }
+            
+            // Draw path
+            if (path.length > 0) {
+                ctx.strokeStyle = '#00ffff';
+                ctx.lineWidth = 3;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ffff';
+                
+                ctx.beginPath();
+                path.forEach((p, i) => {
+                    const px = p.x * GRID_SIZE + GRID_SIZE/2;
+                    const py = p.y * GRID_SIZE + GRID_SIZE/2;
+                    if (i === 0) ctx.moveTo(px, py);
+                    else ctx.lineTo(px, py);
+                });
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw Player
+            const playerPx = player.x * GRID_SIZE + GRID_SIZE/2;
+            const playerPy = player.y * GRID_SIZE + GRID_SIZE/2;
+            
+            ctx.fillStyle = player.fast ? '#ffaa00' : '#ffff00';
+            ctx.shadowBlur = 15;
+            ctx.shadowColor = player.fast ? '#ffaa00' : '#ffff00';
+            
+            if (player.isDrawing) {
+                ctx.beginPath();
+                ctx.moveTo(playerPx, playerPy - 4);
+                ctx.lineTo(playerPx + 4, playerPy);
+                ctx.lineTo(playerPx, playerPy + 4);
+                ctx.lineTo(playerPx - 4, playerPy);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                ctx.fillRect(playerPx - 4, playerPy - 4, 8, 8);
+            }
+            ctx.shadowBlur = 0;
+            
+            // Draw Qwump
+            ctx.save();
+            
+            qwump.tail.forEach((t, i) => {
+                const alpha = 1 - (i / qwump.tail.length);
+                const size = 4 + (qwump.tail.length - i);
+                ctx.fillStyle = `rgba(255, 0, 255, ${alpha * 0.5})`;
+                ctx.fillRect(t.x - size/2, t.y - size/2, size, size);
+            });
+            
+            ctx.translate(qwump.x, qwump.y);
+            ctx.rotate(Date.now() / 100);
+            
+            const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, 15);
+            gradient.addColorStop(0, 'rgba(255, 0, 255, 1)');
+            gradient.addColorStop(0.5, 'rgba(255, 0, 255, 0.6)');
+            gradient.addColorStop(1, 'rgba(255, 0, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(-15, -15, 30, 30);
+            
+            ctx.fillStyle = '#ff00ff';
+            ctx.beginPath();
+            ctx.moveTo(0, -6);
+            ctx.lineTo(6, 0);
+            ctx.lineTo(0, 6);
+            ctx.lineTo(-6, 0);
+            ctx.closePath();
+            ctx.fill();
+            
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-2, -2, 4, 4);
+            
+            ctx.restore();
+            
+            // Draw Sparx
+            sparx.forEach(s => {
+                const sx = s.x * GRID_SIZE + GRID_SIZE/2;
+                const sy = s.y * GRID_SIZE + GRID_SIZE/2;
+                
+                ctx.fillStyle = '#ff0000';
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#ff0000';
+                
+                ctx.beginPath();
+                ctx.moveTo(sx, sy - 5);
+                ctx.lineTo(sx + 3, sy);
+                ctx.lineTo(sx, sy + 5);
+                ctx.lineTo(sx - 3, sy);
+                ctx.closePath();
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+            
+            // Draw Fuse
+            if (fuse) {
+                const fx = fuse.x * GRID_SIZE + GRID_SIZE/2;
+                const fy = fuse.y * GRID_SIZE + GRID_SIZE/2;
+                
+                ctx.fillStyle = '#ff6600';
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = '#ff6600';
+                
+                const pulse = 1 + Math.sin(Date.now() / 50) * 0.3;
+                ctx.beginPath();
+                ctx.arc(fx, fy, 3 * pulse, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+            
+            // Draw particles
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 40;
+                ctx.fillRect(p.x - 2, p.y - 2, 4, 4);
+            });
+            ctx.globalAlpha = 1;
+        }
+
+        function updateUI() {
+            document.getElementById('score').textContent = 'SCORE: ' + score.toString().padStart(6, '0');
+            document.getElementById('lives').textContent = 'LIVES: ' + lives;
+            document.getElementById('percentage').textContent = 'CLAIMED: ' + claimedPercent + '%';
+            document.getElementById('levelDisplay').textContent = 'LEVEL: ' + level;
+        }
+
+        function gameOver() {
+            isGameOver = true;
+            cancelAnimationFrame(gameLoop);
+            
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('qwumpHighScore', highScore);
+                document.getElementById('highScore').textContent = 'HIGH SCORE: ' + highScore.toString().padStart(6, '0');
+            }
+            
+            document.getElementById('finalScore').textContent = 'SCORE: ' + score;
+            document.getElementById('gameOverScreen').style.display = 'flex';
+            document.getElementById('controls').classList.add('hidden');
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
         }
 
         #gameWrapper {
